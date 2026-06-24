@@ -1,122 +1,149 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import "./App.css";
+
+import {
+  completeTask,
+  createTask,
+  deleteTaskCompletion,
+  getStats,
+  getTaskCompletions,
+  getTasks,
+  getUsers,
+  deleteTask,
+  updateTask,
+  createTaskCompletionWithDate,
+} from "./api/hausheldApi";
+
+import type { Stat, Task, TaskCompletion, User } from "./types";
+import { AppLayout } from "./layout/AppLayout";
+import { DashboardPage } from "./pages/DashboardPage";
+import { HistoryPage } from "./pages/HistoryPage";
+import { TasksPage } from "./pages/TasksPage";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [users, setUsers] = useState<User[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [completions, setCompletions] = useState<TaskCompletion[]>([]);
+  const [stats, setStats] = useState<Stat[]>([]);
+  const [lastDeletedCompletion, setLastDeletedCompletion] =
+    useState<TaskCompletion | null>(null);
+
+  async function loadData() {
+    const [usersData, tasksData, completionsData, statsData] =
+      await Promise.all([
+        getUsers(),
+        getTasks(),
+        getTaskCompletions(),
+        getStats(),
+      ]);
+
+    setUsers(usersData);
+    setTasks(tasksData);
+    setCompletions(completionsData);
+    setStats(statsData);
+  }
+
+  async function handleCreateTask(name: string, points: number) {
+    await createTask(name, points);
+    await loadData();
+  }
+
+  async function handleCompleteTask(userId: string, taskId: string) {
+    await completeTask(userId, taskId);
+    await loadData();
+  }
+
+  async function handleDeleteCompletion(id: string) {
+    const completion = completions.find((item) => item.id === id);
+
+    if (!completion) return;
+
+    await deleteTaskCompletion(id);
+    setLastDeletedCompletion(completion);
+    await loadData();
+  }
+
+  async function handleUndoDeleteCompletion() {
+    if (!lastDeletedCompletion) return;
+
+    await createTaskCompletionWithDate(
+      lastDeletedCompletion.user.id,
+      lastDeletedCompletion.task.id,
+      lastDeletedCompletion.completedAt
+    );
+
+    setLastDeletedCompletion(null);
+    await loadData();
+  }
+
+  async function handleUpdateTask(
+    id: string,
+    name: string,
+    points: number
+  ) {
+    await updateTask(id, name, points);
+    await loadData();
+  }
+
+  async function handleDeleteTask(id: string) {
+    await deleteTask(id);
+    await loadData();
+  }
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route element={<AppLayout />}>
+          <Route
+            path="/"
+            element={
+              <DashboardPage
+                users={users}
+                tasks={tasks}
+                completions={completions}
+                stats={stats}
+                onCompleteTask={handleCompleteTask}
+                onDeleteCompletion={handleDeleteCompletion}
+                lastDeletedCompletion={lastDeletedCompletion}
+                onUndoDeleteCompletion={handleUndoDeleteCompletion}
+                onDismissUndo={() => setLastDeletedCompletion(null)}
+              />
+            }
+          />
+          <Route
+            path="/tasks"
+            element={
+              <TasksPage
+                tasks={tasks}
+                onCreateTask={handleCreateTask}
+                onUpdateTask={handleUpdateTask}
+                onDeleteTask={handleDeleteTask}
+              />
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <HistoryPage
+                users={users}
+                tasks={tasks}
+                completions={completions}
+                onDeleteCompletion={handleDeleteCompletion}
+                lastDeletedCompletion={lastDeletedCompletion}
+                onUndoDeleteCompletion={handleUndoDeleteCompletion}
+                onDismissUndo={() => setLastDeletedCompletion(null)}
+              />
+            }
+          />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;

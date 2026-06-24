@@ -18,8 +18,8 @@ app.get("/", (req, res) => {
 });
 
 
-  ///////////////////
- ////Task routes////
+///////////////////
+////Task routes////
 ///////////////////
 
 app.get("/tasks", async (req, res) => {
@@ -40,19 +40,73 @@ app.post("/tasks", async (req, res) => {
   res.status(201).json(task);
 });
 
+app.patch("/tasks/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, points } = req.body;
+
+  const pointsValue = Number(points);
+
+  if (!name?.trim()) {
+    return res.status(400).json({
+      message: "Der Aufgabenname darf nicht leer sein.",
+    });
+  }
+
+  if (!Number.isInteger(pointsValue) || pointsValue < 1) {
+    return res.status(400).json({
+      message: "Punkte müssen eine ganze Zahl größer als 0 sein.",
+    });
+  }
+
+  const existingTask = await prisma.task.findUnique({
+    where: { id },
+  });
+
+  if (!existingTask) {
+    return res.status(404).json({
+      message: "Aufgabe nicht gefunden.",
+    });
+  }
+
+  const updatedTask = await prisma.task.update({
+    where: { id },
+    data: {
+      name: name.trim(),
+      points: pointsValue,
+    },
+  });
+
+  res.json(updatedTask);
+});
+
 app.delete("/tasks/:id", async (req, res) => {
   const { id } = req.params;
 
-  await prisma.task.delete({
+  const existingTask = await prisma.task.findUnique({
     where: { id },
   });
+
+  if (!existingTask) {
+    return res.status(404).json({
+      message: "Aufgabe nicht gefunden.",
+    });
+  }
+
+  await prisma.$transaction([
+    prisma.taskCompletion.deleteMany({
+      where: { taskId: id },
+    }),
+    prisma.task.delete({
+      where: { id },
+    }),
+  ]);
 
   res.status(204).send();
 });
 
 
-  ///////////////////
- ////User routes////
+///////////////////
+////User routes////
 ///////////////////
 
 app.post("/users", async (req, res) => {
@@ -72,17 +126,18 @@ app.get("/users", async (req, res) => {
 });
 
 
-  //////////////////////////////
- ////Task completion routes////
+//////////////////////////////
+////Task completion routes////
 //////////////////////////////
 
 app.post("/task-completions", async (req, res) => {
-  const { userId, taskId } = req.body;
+  const { userId, taskId, completedAt } = req.body;
 
   const completion = await prisma.taskCompletion.create({
     data: {
       userId,
       taskId,
+      completedAt: completedAt ? new Date(completedAt) : undefined,
     },
     include: {
       user: true,
@@ -117,8 +172,8 @@ app.delete("/task-completions/:id", async (req, res) => {
   res.status(204).send();
 });
 
-  ////////////////////
- ////Stats routes////
+////////////////////
+////Stats routes////
 ////////////////////
 
 app.get("/stats", async (req, res) => {
