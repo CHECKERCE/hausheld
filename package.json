@@ -11,5 +11,12 @@
     "dev:bot": "npm run dev -w apps/bot",
     "dev:web": "npm run dev -w apps/web",
     "dev": "echo \"Starte api, bot oder web einzeln mit npm run dev:api / dev:bot / dev:web\""
+  },
+  "devDependencies": {
+    "dotenv": "^17.4.2",
+    "prisma": "^6.19.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3"
   }
 }
