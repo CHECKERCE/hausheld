@@ -1,7 +1,8 @@
 import { ActivityLog } from "../components/ActivityLog";
 import { CompleteTaskForm } from "../components/CompleteTaskForm";
 import { Leaderboard } from "../components/Leaderboard";
-import type { Stat, Task, TaskCompletion, User } from "../types";
+import { OpenRemindersList } from "../components/OpenRemindersList";
+import type { Reminder, Stat, Task, TaskCompletion, User } from "../types";
 
 type Props = {
   users: User[];
@@ -10,6 +11,9 @@ type Props = {
   stats: Stat[];
   onCompleteTask: (userId: string, taskId: string) => Promise<void>;
   onDeleteCompletion: (id: string) => Promise<void>;
+  reminders: Reminder[];
+  onMarkReminderDone: (id: string) => Promise<void>;
+  onDeleteReminder: (id: string) => Promise<void>;
 };
 
 export function DashboardPage({
@@ -17,6 +21,9 @@ export function DashboardPage({
   tasks,
   completions,
   stats,
+  reminders,
+  onMarkReminderDone,
+  onDeleteReminder,
   onCompleteTask,
   onDeleteCompletion,
 }: Props) {
@@ -29,6 +36,14 @@ export function DashboardPage({
       />
 
       <Leaderboard stats={stats} />
+
+      {reminders.length > 0 && (
+        <OpenRemindersList
+          reminders={reminders}
+          onMarkDone={onMarkReminderDone}
+          onDeleteReminder={onDeleteReminder}
+        />
+      )}
 
       <ActivityLog
         completions={completions}

@@ -647,3 +647,25 @@ section>.task-list>.task-item {
     width: 100%;
   }
 }
+
+.history-search-input {
+  flex: 2 1 360px !important;
+}
+
+.filter-row select {
+  flex: 1 1 180px;
+}
+
+.reminder-countdown {
+  display: inline-block;
+  margin-top: 10px;
+
+  color: #ddd6fe;
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.reminder-countdown.overdue {
+  color: #f87171;
+}

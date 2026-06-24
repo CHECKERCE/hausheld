@@ -185,7 +185,11 @@ function App() {
   }
 
   useEffect(() => {
-    void loadData();
+    async function fetchInitialData() {
+      await loadData();
+    }
+
+    void fetchInitialData();
   }, []);
 
   useEffect(() => {
@@ -224,6 +228,9 @@ function App() {
                 stats={stats}
                 onCompleteTask={handleCompleteTask}
                 onDeleteCompletion={handleDeleteCompletion}
+                reminders={reminders}
+                onMarkReminderDone={handleMarkReminderDone}
+                onDeleteReminder={handleDeleteReminder}
               />
             }
           />

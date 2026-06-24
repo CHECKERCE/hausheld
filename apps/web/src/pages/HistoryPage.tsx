@@ -47,6 +47,7 @@ export function HistoryPage({
 
         <div className="filter-row">
           <input
+            className="history-search-input"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Suche nach Person oder Aufgabe"

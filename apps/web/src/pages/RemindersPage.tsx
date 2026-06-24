@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { OpenRemindersList } from "../components/OpenRemindersList";
 import type { Reminder } from "../types";
 
 type Props = {
@@ -38,7 +39,6 @@ export function RemindersPage({
     setMinutes(defaultTaskTime);
   }
 
-  const openReminders = reminders.filter((reminder) => !reminder.done);
   const doneReminders = reminders.filter((reminder) => reminder.done);
 
   return (
@@ -79,41 +79,11 @@ export function RemindersPage({
         </div>
       </section>
 
-      <section>
-        <h2>Offene Reminder</h2>
-
-        {openReminders.length === 0 && <p>Keine offenen Reminder.</p>}
-
-        <ul className="reminder-list">
-          {openReminders.map((reminder) => (
-            <li key={reminder.id} className="reminder-item">
-              <div className="activity-content">
-                <span className="activity-text">
-                  <strong>{reminder.title}</strong> – {reminder.message}
-                </span>
-
-                <small className="activity-date">
-                  Fällig: {new Date(reminder.dueAt).toLocaleString("de-DE")} ·{" "}
-                  {reminder.triggered ? "Erinnerung gesendet" : "Wartet auf Erinnerung"}
-                </small>
-              </div>
-
-              <div className="task-actions">
-                <button onClick={() => onMarkDone(reminder.id)}>
-                  Erledigt
-                </button>
-
-                <button
-                  className="danger-button"
-                  onClick={() => onDeleteReminder(reminder.id)}
-                >
-                  Löschen
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <OpenRemindersList
+        reminders={reminders}
+        onMarkDone={onMarkDone}
+        onDeleteReminder={onDeleteReminder}
+      />
 
       <section>
         <h2>Erledigte Reminder</h2>
