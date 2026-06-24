@@ -332,7 +332,8 @@ section>ul:not(.activity-list)>li strong {
   display: block;
   color: var(--text);
   line-height: 1.5;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .activity-text strong {
@@ -656,16 +657,56 @@ section>.task-list>.task-item {
   flex: 1 1 180px;
 }
 
-.reminder-countdown {
-  display: inline-block;
-  margin-top: 10px;
+/* Reminder responsive fix */
 
-  color: #ddd6fe;
-  font-size: 2rem;
-  font-weight: 900;
-  letter-spacing: -0.04em;
+.reminder-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
 }
 
-.reminder-countdown.overdue {
-  color: #f87171;
+.reminder-item .activity-content {
+  min-width: 0;
+}
+
+.reminder-item .activity-text {
+  display: block;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.reminder-countdown {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+@media (max-width: 800px) {
+  .reminder-item {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .reminder-item .task-actions {
+    width: 100%;
+    margin-left: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .reminder-item .task-actions button {
+    width: 100%;
+    flex: initial;
+  }
+
+  .reminder-countdown {
+    font-size: clamp(1.6rem, 8vw, 2.2rem);
+  }
+
+  .reminder-item .activity-date {
+    display: block;
+    line-height: 1.4;
+  }
 }

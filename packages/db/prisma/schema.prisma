@@ -38,14 +38,11 @@ model TaskCompletion {
 
 model Reminder {
   id        String   @id @default(cuid())
-
   title     String
   message   String
-
   dueAt     DateTime
   done      Boolean  @default(false)
-
   triggered Boolean  @default(false)
-
+  key       String?  @unique
   createdAt DateTime @default(now())
 }

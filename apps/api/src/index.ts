@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { prisma } from "@hausheld/db";
+import { startDailyReminderScheduler } from "./services/dailyReminderScheduler";
 
 dotenv.config();
 
@@ -210,11 +211,6 @@ app.get("/stats", async (req, res) => {
   res.json(Object.values(stats));
 });
 
-app.listen(port, () => {
-  console.log(`API läuft auf http://localhost:${port}`);
-});
-
-
 ////////////////////////
 ////Reminder routes////
 //////////////////////
@@ -319,4 +315,11 @@ app.patch("/reminders/:id/reopen", async (req, res) => {
   });
 
   res.json(reminder);
+});
+
+
+startDailyReminderScheduler();
+
+app.listen(port, () => {
+  console.log(`API läuft auf http://localhost:${port}`);
 });
