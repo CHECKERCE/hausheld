@@ -185,16 +185,20 @@ app.get("/stats", async (req, res) => {
     },
   });
 
-  const stats = completions.reduce<Record<string, {
+  type UserStats = {
     userId: string;
     name: string;
     tasksDone: number;
     points: number;
-  }>>((acc, completion) => {
+  };
+
+  const stats: Record<string, UserStats> = {};
+
+  for (const completion of completions) {
     const userId = completion.user.id;
 
-    if (!acc[userId]) {
-      acc[userId] = {
+    if (!stats[userId]) {
+      stats[userId] = {
         userId,
         name: completion.user.name,
         tasksDone: 0,
@@ -202,11 +206,9 @@ app.get("/stats", async (req, res) => {
       };
     }
 
-    acc[userId].tasksDone += 1;
-    acc[userId].points += completion.task.points;
-
-    return acc;
-  }, {});
+    stats[userId].tasksDone += 1;
+    stats[userId].points += completion.task.points;
+  }
 
   res.json(Object.values(stats));
 });
