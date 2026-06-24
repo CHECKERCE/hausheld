@@ -1,6 +1,6 @@
 import type { Reminder, Stat, Task, TaskCompletion, User } from "../types";
 
-const API_URL = "http://localhost:3001";
+const API_URL = "/api";
 
 //////////////
 ////User/////
