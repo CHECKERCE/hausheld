@@ -45,6 +45,15 @@ type User = {
     telegramName?: string | null;
 };
 
+type UserAbsence = {
+    id: string;
+    userId: string;
+    startDate: string;
+    endDate: string;
+    reason?: string | null;
+    user: User;
+};
+
 type TelegramChat = {
     id: string;
     chatId: string;
@@ -61,6 +70,30 @@ type TaskCompletion = {
 async function getUsers(): Promise<User[]> {
     const res = await fetch(`${apiUrl}/users`);
     return res.json();
+}
+
+async function getUserAbsences(): Promise<UserAbsence[]> {
+    const res = await fetch(`${apiUrl}/user-absences`);
+    return res.json();
+}
+
+function isDateInRange(date: Date, startDate: string, endDate: string) {
+    const time = date.getTime();
+
+    return (
+        time >= new Date(startDate).getTime() &&
+        time <= new Date(endDate).getTime()
+    );
+}
+
+function isUserCurrentlyAway(user: User, absences: UserAbsence[]) {
+    const now = new Date();
+
+    return absences.some(
+        (absence) =>
+            absence.userId === user.id &&
+            isDateInRange(now, absence.startDate, absence.endDate)
+    );
 }
 
 async function registerTelegramChat(
@@ -187,23 +220,38 @@ function formatDueTime(value: string) {
     }
 }
 
-async function getSuggestedUser(): Promise<User | null> {
-    const [users, stats, completions] = await Promise.all([
+type SuggestedUserResult = {
+    user: User;
+    points: number;
+    tasksDone: number;
+    lastCompletedAt: string | null;
+    availableUsersCount: number;
+};
+
+async function getSuggestedUser(): Promise<SuggestedUserResult | null> {
+    const [users, stats, completions, absences] = await Promise.all([
         getUsers(),
         getStats(),
         getTaskCompletions(),
+        getUserAbsences(),
     ]);
 
-    if (users.length === 0) return null;
+    const availableUsers = users.filter(
+        (user) => !isUserCurrentlyAway(user, absences)
+    );
 
-    const usersWithData = users.map((user) => {
+    if (availableUsers.length === 0) {
+        return null;
+    }
+
+    const usersWithData = availableUsers.map((user) => {
         const stat = stats.find((s) => s.userId === user.id);
 
         const userCompletions = completions.filter(
             (completion) => completion.user.id === user.id
         );
 
-        const lastCompletion = userCompletions.sort(
+        const lastCompletion = [...userCompletions].sort(
             (a, b) =>
                 new Date(b.completedAt).getTime() -
                 new Date(a.completedAt).getTime()
@@ -212,27 +260,31 @@ async function getSuggestedUser(): Promise<User | null> {
         return {
             user,
             points: stat?.points ?? 0,
+            tasksDone: stat?.tasksDone ?? 0,
             lastCompletedAt: lastCompletion?.completedAt ?? null,
+            availableUsersCount: availableUsers.length,
         };
     });
 
-    const lowestPoints = Math.min(...usersWithData.map((u) => u.points));
+    const lowestPoints = Math.min(...usersWithData.map((item) => item.points));
 
-    const candidates = usersWithData.filter(
-        (u) => u.points === lowestPoints
+    const lowestPointUsers = usersWithData.filter(
+        (item) => item.points === lowestPoints
     );
 
-    const neverDone = candidates.filter((u) => !u.lastCompletedAt);
+    const neverDone = lowestPointUsers.filter(
+        (item) => item.lastCompletedAt === null
+    );
 
     if (neverDone.length > 0) {
-        return neverDone[Math.floor(Math.random() * neverDone.length)].user;
+        return neverDone[Math.floor(Math.random() * neverDone.length)];
     }
 
-    return [...candidates].sort(
+    return [...lowestPointUsers].sort(
         (a, b) =>
             new Date(a.lastCompletedAt!).getTime() -
             new Date(b.lastCompletedAt!).getTime()
-    )[0].user;
+    )[0];
 }
 
 function startReminderScheduler() {
@@ -250,10 +302,10 @@ function startReminderScheduler() {
             const chat = chats[0];
 
             for (const reminder of reminders) {
-                const suggestedUser = await getSuggestedUser();
+                const suggested = await getSuggestedUser();
 
-                const mention = suggestedUser
-                    ? createMention(suggestedUser)
+                const mention = suggested
+                    ? createMention(suggested.user)
                     : "jemand";
 
                 await bot.telegram.sendMessage(
@@ -393,72 +445,23 @@ bot.command("stats", async (ctx) => {
 });
 
 bot.command("who", async (ctx) => {
-    const [users, stats, completions] = await Promise.all([
-        getUsers(),
-        getStats(),
-        getTaskCompletions(),
-    ]);
+    const suggested = await getSuggestedUser();
 
-    if (users.length === 0) {
-        await ctx.reply("Es gibt noch keine Personen.");
+    if (!suggested) {
+        await ctx.reply(
+            "Aktuell ist niemand verfügbar. Vielleicht sind alle als abwesend markiert."
+        );
         return;
     }
 
-    const usersWithData = users.map((user) => {
-        const stat = stats.find((s) => s.userId === user.id);
-
-        const userCompletions = completions.filter(
-            (completion) => completion.user.id === user.id
-        );
-
-        const lastCompletion = userCompletions.sort(
-            (a, b) =>
-                new Date(b.completedAt).getTime() -
-                new Date(a.completedAt).getTime()
-        )[0];
-
-        return {
-            user,
-            points: stat?.points ?? 0,
-            tasksDone: stat?.tasksDone ?? 0,
-            lastCompletedAt: lastCompletion?.completedAt ?? null,
-        };
-    });
-
-    const lowestPoints = Math.min(
-        ...usersWithData.map((item) => item.points)
-    );
-
-    const lowestPointUsers = usersWithData.filter(
-        (item) => item.points === lowestPoints
-    );
-
-    const usersWithoutCompletion = lowestPointUsers.filter(
-        (item) => item.lastCompletedAt === null
-    );
-
-    let selected;
-
-    if (usersWithoutCompletion.length > 0) {
-        selected =
-            usersWithoutCompletion[
-            Math.floor(Math.random() * usersWithoutCompletion.length)
-            ];
-    } else {
-        selected = [...lowestPointUsers].sort(
-            (a, b) =>
-                new Date(a.lastCompletedAt!).getTime() -
-                new Date(b.lastCompletedAt!).getTime()
-        )[0];
-    }
-
     await ctx.reply(
-        `Heute wäre ${selected.user.name} dran 🙂\n\n` +
-        `Punkte: ${selected.points}\n` +
-        `Aufgaben erledigt: ${selected.tasksDone}` +
-        (selected.lastCompletedAt
+        `Heute wäre ${suggested.user.name} dran 🙂\n\n` +
+        `Punkte: ${suggested.points}\n` +
+        `Aufgaben erledigt: ${suggested.tasksDone}\n` +
+        `Verfügbare Personen: ${suggested.availableUsersCount}` +
+        (suggested.lastCompletedAt
             ? `\nLetzte Aufgabe: ${new Date(
-                selected.lastCompletedAt
+                suggested.lastCompletedAt
             ).toLocaleString("de-DE")}`
             : `\nLetzte Aufgabe: noch keine`)
     );

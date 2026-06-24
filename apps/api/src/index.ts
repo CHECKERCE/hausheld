@@ -126,6 +126,97 @@ app.get("/users", async (req, res) => {
   res.json(users);
 });
 
+app.patch("/users/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+
+  if (!name?.trim()) {
+    return res.status(400).json({ message: "Name fehlt." });
+  }
+
+  const user = await prisma.user.update({
+    where: { id },
+    data: { name: name.trim() },
+  });
+
+  res.json(user);
+});
+
+app.delete("/users/:id", async (req, res) => {
+  const { id } = req.params;
+
+  await prisma.$transaction([
+    prisma.taskCompletion.deleteMany({ where: { userId: id } }),
+    prisma.userAbsence.deleteMany({ where: { userId: id } }),
+    prisma.user.delete({ where: { id } }),
+  ]);
+
+  res.status(204).send();
+});
+
+app.patch("/users/:id/away", async (req, res) => {
+  const { id } = req.params;
+  const { awayUntil } = req.body;
+
+  const user = await prisma.user.update({
+    where: { id },
+    data: {
+      awayUntil: new Date(awayUntil),
+    },
+  });
+
+  res.json(user);
+});
+
+app.patch("/users/:id/back", async (req, res) => {
+  const { id } = req.params;
+
+  const user = await prisma.user.update({
+    where: { id },
+    data: {
+      awayUntil: null,
+    },
+  });
+
+  res.json(user);
+});
+
+
+// abcence
+
+app.get("/user-absences", async (req, res) => {
+  const absences = await prisma.userAbsence.findMany({
+    include: { user: true },
+    orderBy: { startDate: "desc" },
+  });
+
+  res.json(absences);
+});
+
+app.post("/user-absences", async (req, res) => {
+  const { userId, startDate, endDate, reason } = req.body;
+
+  const absence = await prisma.userAbsence.create({
+    data: {
+      userId,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      reason: reason?.trim() || null,
+    },
+    include: { user: true },
+  });
+
+  res.status(201).json(absence);
+});
+
+app.delete("/user-absences/:id", async (req, res) => {
+  await prisma.userAbsence.delete({
+    where: { id: req.params.id },
+  });
+
+  res.status(204).send();
+});
+
 
 //////////////////////////////
 ////Task completion routes////

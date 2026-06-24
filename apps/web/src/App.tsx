@@ -19,6 +19,12 @@ import {
   markReminderDone,
   reopenReminder,
   updateTask,
+  getUserAbsences,
+  createUserAbsence,
+  deleteUserAbsence,
+  createUser,
+  updateUser,
+  deleteUser,
 } from "./api/hausheldApi";
 
 import type {
@@ -28,6 +34,7 @@ import type {
   TaskCompletion,
   UndoAction,
   User,
+  UserAbsence,
 } from "./types";
 
 import { AppLayout } from "./layout/AppLayout";
@@ -35,9 +42,11 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { RemindersPage } from "./pages/RemindersPage";
 import { TasksPage } from "./pages/TasksPage";
+import { PeoplePage } from "./pages/PeoplePage";
 
 function App() {
   const [users, setUsers] = useState<User[]>([]);
+  const [absences, setAbsences] = useState<UserAbsence[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completions, setCompletions] = useState<TaskCompletion[]>([]);
   const [stats, setStats] = useState<Stat[]>([]);
@@ -47,12 +56,14 @@ function App() {
   async function loadData() {
     const [
       usersData,
+      absencesData,
       tasksData,
       completionsData,
       statsData,
       remindersData,
     ] = await Promise.all([
       getUsers(),
+      getUserAbsences(),
       getTasks(),
       getTaskCompletions(),
       getStats(),
@@ -60,10 +71,41 @@ function App() {
     ]);
 
     setUsers(usersData);
+    setAbsences(absencesData)
     setTasks(tasksData);
     setCompletions(completionsData);
     setStats(statsData);
     setReminders(remindersData);
+  }
+
+  async function handleCreateUser(name: string) {
+    await createUser(name);
+    await loadData();
+  }
+
+  async function handleUpdateUser(id: string, name: string) {
+    await updateUser(id, name);
+    await loadData();
+  }
+
+  async function handleDeleteUser(id: string) {
+    await deleteUser(id);
+    await loadData();
+  }
+
+  async function handleCreateAbsence(
+    userId: string,
+    startDate: string,
+    endDate: string,
+    reason: string
+  ) {
+    await createUserAbsence(userId, startDate, endDate, reason);
+    await loadData();
+  }
+
+  async function handleDeleteAbsence(id: string) {
+    await deleteUserAbsence(id);
+    await loadData();
   }
 
   async function handleCreateTask(name: string, points: number) {
@@ -231,6 +273,7 @@ function App() {
                 reminders={reminders}
                 onMarkReminderDone={handleMarkReminderDone}
                 onDeleteReminder={handleDeleteReminder}
+                abcences={absences}
               />
             }
           />
@@ -252,9 +295,11 @@ function App() {
             element={
               <HistoryPage
                 users={users}
+                stats={stats}
                 tasks={tasks}
                 completions={completions}
                 onDeleteCompletion={handleDeleteCompletion}
+                abcences={absences}
               />
             }
           />
@@ -267,6 +312,20 @@ function App() {
                 onCreateReminder={handleCreateReminder}
                 onMarkDone={handleMarkReminderDone}
                 onDeleteReminder={handleDeleteReminder}
+              />
+            }
+          />
+          <Route
+            path="/people"
+            element={
+              <PeoplePage
+                users={users}
+                absences={absences}
+                onCreateUser={handleCreateUser}
+                onUpdateUser={handleUpdateUser}
+                onDeleteUser={handleDeleteUser}
+                onCreateAbsence={handleCreateAbsence}
+                onDeleteAbsence={handleDeleteAbsence}
               />
             }
           />

@@ -32,6 +32,10 @@ export function AppLayout({
         <NavLink to="/history">
           📈 History
         </NavLink>
+
+        <NavLink to="/people">
+          👥 Personen
+        </NavLink>
       </nav>
 
       <UndoBanner

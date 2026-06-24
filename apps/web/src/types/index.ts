@@ -1,6 +1,17 @@
 export type User = {
   id: string;
   name: string;
+  telegramUserId?: string | null;
+  telegramName?: string | null;
+};
+
+export type UserAbsence = {
+  id: string;
+  userId: string;
+  startDate: string;
+  endDate: string;
+  reason: string | null;
+  user: User;
 };
 
 export type Task = {
@@ -35,17 +46,17 @@ export type Reminder = {
 
 export type UndoAction =
   | {
-      kind: "completionDeleted";
-      message: string;
-      completion: TaskCompletion;
-    }
+    kind: "completionDeleted";
+    message: string;
+    completion: TaskCompletion;
+  }
   | {
-      kind: "reminderDeleted";
-      message: string;
-      reminder: Reminder;
-    }
+    kind: "reminderDeleted";
+    message: string;
+    reminder: Reminder;
+  }
   | {
-      kind: "reminderCompleted";
-      message: string;
-      reminder: Reminder;
-    };
+    kind: "reminderCompleted";
+    message: string;
+    reminder: Reminder;
+  };

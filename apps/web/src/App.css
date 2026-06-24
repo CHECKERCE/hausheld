@@ -710,3 +710,56 @@ section>.task-list>.task-item {
     line-height: 1.4;
   }
 }
+
+.person-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.person-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  padding: 16px;
+
+  background: #141417;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.person-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.person-main strong {
+  display: block;
+  color: var(--text);
+}
+
+.person-status {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 800px) {
+  .person-item {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .person-item .task-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .person-item .task-actions button {
+    flex: 1;
+  }
+}

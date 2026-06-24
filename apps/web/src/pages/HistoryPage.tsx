@@ -1,19 +1,23 @@
 import { useMemo, useState } from "react";
 import { HistoryCharts } from "../components/HistoryCharts";
-import type { Task, TaskCompletion, User } from "../types";
+import type { Task, TaskCompletion, User, Stat, UserAbsence } from "../types";
 
 type Props = {
   users: User[];
+  stats: Stat[];
   tasks: Task[];
   completions: TaskCompletion[];
   onDeleteCompletion: (id: string) => Promise<void>;
+  abcences: UserAbsence[];
 };
 
 export function HistoryPage({
   users,
+  stats,
   tasks,
   completions,
   onDeleteCompletion,
+  abcences,
 }: Props) {
   const [search, setSearch] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -95,7 +99,12 @@ export function HistoryPage({
         </div>
       </section>
 
-      <HistoryCharts completions={filteredCompletions} />
+      <HistoryCharts
+        users={users}
+        stats={stats}
+        completions={filteredCompletions}
+        absences={abcences}
+      />
 
       <section>
         <h2>Verlauf</h2>

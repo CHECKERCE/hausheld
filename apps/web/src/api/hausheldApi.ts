@@ -1,4 +1,4 @@
-import type { Reminder, Stat, Task, TaskCompletion, User } from "../types";
+import type { Reminder, Stat, Task, TaskCompletion, User, UserAbsence } from "../types";
 
 const API_URL = "/api";
 
@@ -19,6 +19,48 @@ export async function createUser(name: string): Promise<User> {
   });
 
   return res.json();
+}
+
+export async function updateUser(id: string, name: string): Promise<User> {
+  const res = await fetch(`${API_URL}/users/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+
+  return res.json();
+}
+
+export async function deleteUser(id: string): Promise<void> {
+  await fetch(`${API_URL}/users/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export async function getUserAbsences(): Promise<UserAbsence[]> {
+  const res = await fetch(`${API_URL}/user-absences`);
+  return res.json();
+}
+
+export async function createUserAbsence(
+  userId: string,
+  startDate: string,
+  endDate: string,
+  reason: string
+): Promise<UserAbsence> {
+  const res = await fetch(`${API_URL}/user-absences`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, startDate, endDate, reason }),
+  });
+
+  return res.json();
+}
+
+export async function deleteUserAbsence(id: string): Promise<void> {
+  await fetch(`${API_URL}/user-absences/${id}`, {
+    method: "DELETE",
+  });
 }
 
 /////////////

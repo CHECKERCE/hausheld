@@ -7,31 +7,23 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { TaskCompletion } from "../types";
+import type { Stat, TaskCompletion, User, UserAbsence } from "../types";
+import { calculateFairnessStats } from "../utils/fairness";
 
 type Props = {
+  users: User[];
+  stats: Stat[];
   completions: TaskCompletion[];
+  absences: UserAbsence[];
 };
 
-export function HistoryCharts({ completions }: Props) {
-  const pointsByUser = Object.values(
-    completions.reduce<Record<string, { name: string; points: number }>>(
-      (acc, completion) => {
-        const userId = completion.user.id;
-
-        if (!acc[userId]) {
-          acc[userId] = {
-            name: completion.user.name,
-            points: 0,
-          };
-        }
-
-        acc[userId].points += completion.task.points;
-        return acc;
-      },
-      {}
-    )
-  ).sort((a, b) => b.points - a.points);
+export function HistoryCharts({ users, stats, completions, absences }: Props) {
+  const fairnessByUser = calculateFairnessStats(
+    users,
+    stats,
+    completions,
+    absences
+  ).sort((a, b) => b.score - a.score);
 
   const countByTask = Object.values(
     completions.reduce<Record<string, { task: string; count: number }>>(
@@ -66,10 +58,10 @@ export function HistoryCharts({ completions }: Props) {
 
       <div className="charts-grid">
         <div className="chart-card">
-          <h3>Punkte pro Person</h3>
+          <h3>Score pro Person</h3>
 
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={pointsByUser} margin={{ top: 10, right: 8, left: -16 }}>
+            <BarChart data={fairnessByUser} margin={{ top: 10, right: 8, left: -16 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
 
               <XAxis
@@ -93,7 +85,7 @@ export function HistoryCharts({ completions }: Props) {
               />
 
               <Bar
-                dataKey="points"
+                dataKey="score"
                 fill="#8b5cf6"
                 radius={[7, 7, 2, 2]}
               />
