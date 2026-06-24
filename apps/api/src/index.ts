@@ -317,6 +317,75 @@ app.patch("/reminders/:id/reopen", async (req, res) => {
   res.json(reminder);
 });
 
+app.get("/reminders/pending", async (req, res) => {
+  const reminders = await prisma.reminder.findMany({
+    where: {
+      done: false,
+      triggered: false,
+      dueAt: {
+        lte: new Date(),
+      },
+    },
+    orderBy: {
+      dueAt: "asc",
+    },
+  });
+
+  res.json(reminders);
+});
+
+
+////////////////////////
+////Telegram routes////
+//////////////////////
+
+app.get("/telegram-chats", async (req, res) => {
+  const chats = await prisma.telegramChat.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
+  res.json(chats);
+});
+
+app.post("/telegram-chats", async (req, res) => {
+  const { chatId, title } = req.body;
+
+  if (!chatId) {
+    return res.status(400).json({ message: "chatId fehlt." });
+  }
+
+  const chat = await prisma.telegramChat.upsert({
+    where: { chatId: String(chatId) },
+    update: {
+      title: title ?? null,
+    },
+    create: {
+      chatId: String(chatId),
+      title: title ?? null,
+    },
+  });
+
+  res.status(201).json(chat);
+});
+
+app.patch("/users/:id/telegram", async (req, res) => {
+  const { id } = req.params;
+  const { telegramUserId, telegramName } = req.body;
+
+  if (!telegramUserId) {
+    return res.status(400).json({ message: "telegramUserId fehlt." });
+  }
+
+  const user = await prisma.user.update({
+    where: { id },
+    data: {
+      telegramUserId: String(telegramUserId),
+      telegramName: telegramName ?? null,
+    },
+  });
+
+  res.json(user);
+});
 
 startDailyReminderScheduler();
 

@@ -8,9 +8,11 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
+  id             String   @id @default(cuid())
+  name           String
+  telegramUserId String?
+  telegramName   String?
+  createdAt      DateTime @default(now())
 
   completions TaskCompletion[]
 }
@@ -25,10 +27,10 @@ model Task {
 }
 
 model TaskCompletion {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId      String
-  taskId      String
+  userId String
+  taskId String
 
   completedAt DateTime @default(now())
 
@@ -44,5 +46,12 @@ model Reminder {
   done      Boolean  @default(false)
   triggered Boolean  @default(false)
   key       String?  @unique
+  createdAt DateTime @default(now())
+}
+
+model TelegramChat {
+  id        String   @id @default(cuid())
+  chatId    String   @unique
+  title     String?
   createdAt DateTime @default(now())
 }
