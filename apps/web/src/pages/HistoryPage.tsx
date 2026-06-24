@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { HistoryCharts } from "../components/HistoryCharts";
-import { UndoBanner } from "../components/UndoBanner";
 import type { Task, TaskCompletion, User } from "../types";
 
 type Props = {
@@ -8,9 +7,6 @@ type Props = {
   tasks: Task[];
   completions: TaskCompletion[];
   onDeleteCompletion: (id: string) => Promise<void>;
-  lastDeletedCompletion: TaskCompletion | null;
-  onUndoDeleteCompletion: () => Promise<void>;
-  onDismissUndo: () => void;
 };
 
 export function HistoryPage({
@@ -18,9 +14,6 @@ export function HistoryPage({
   tasks,
   completions,
   onDeleteCompletion,
-  lastDeletedCompletion,
-  onUndoDeleteCompletion,
-  onDismissUndo
 }: Props) {
   const [search, setSearch] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -104,13 +97,6 @@ export function HistoryPage({
       <HistoryCharts completions={filteredCompletions} />
 
       <section>
-
-        <UndoBanner
-          completion={lastDeletedCompletion}
-          onUndo={onUndoDeleteCompletion}
-          onDismiss={onDismissUndo}
-        />
-
         <h2>Verlauf</h2>
 
         {filteredCompletions.length === 0 && <p>Keine passenden Einträge.</p>}

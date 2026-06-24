@@ -539,21 +539,111 @@ section>.task-list>.task-item {
 }
 
 .undo-banner {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1000;
+
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
 
-  background: rgba(139, 92, 246, 0.14);
-  border-color: rgba(167, 139, 250, 0.38);
+  width: min(460px, calc(100vw - 32px));
+  margin: 0;
+  padding: 16px 18px;
+
+  color: var(--text);
+  background: #1f1a2b;
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  border-radius: 16px;
+
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
 }
 
 .undo-banner span {
+  flex: 1;
   color: var(--text);
   font-weight: 700;
 }
 
-.undo-banner div {
+.undo-banner-actions {
   display: flex;
-  gap: 10px;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.undo-banner-actions button {
+  min-height: 38px;
+  padding: 0 12px;
+}
+
+@media (max-width: 600px) {
+  .undo-banner {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+
+    width: auto;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .undo-banner-actions {
+    width: 100%;
+  }
+
+  .undo-banner-actions button {
+    flex: 1;
+  }
+}
+
+.reminder-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reminder-form .task-name-field {
+  flex: 1 1 220px;
+}
+
+.reminder-list {
+  display: grid;
+  gap: 12px;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+.reminder-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  padding: 16px;
+
+  background: #141417;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+@media (max-width: 800px) {
+  .reminder-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .reminder-form .task-name-field,
+  .reminder-form .points-field {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  .reminder-form input,
+  .reminder-form button {
+    width: 100%;
+  }
 }

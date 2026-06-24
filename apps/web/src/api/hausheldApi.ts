@@ -1,6 +1,10 @@
-import type { Stat, Task, TaskCompletion, User } from "../types";
+import type { Reminder, Stat, Task, TaskCompletion, User } from "../types";
 
 const API_URL = "http://localhost:3001";
+
+//////////////
+////User/////
+////////////
 
 export async function getUsers(): Promise<User[]> {
   const res = await fetch(`${API_URL}/users`);
@@ -16,6 +20,10 @@ export async function createUser(name: string): Promise<User> {
 
   return res.json();
 }
+
+/////////////
+////Task////
+///////////
 
 export async function getTasks(): Promise<Task[]> {
   const res = await fetch(`${API_URL}/tasks`);
@@ -65,6 +73,11 @@ export async function deleteTask(id: string): Promise<void> {
   }
 }
 
+
+/////////////////////////
+////Task Completion ////
+///////////////////////
+
 export async function getTaskCompletions(): Promise<TaskCompletion[]> {
   const res = await fetch(`${API_URL}/task-completions`);
   return res.json();
@@ -103,7 +116,100 @@ export async function deleteTaskCompletion(id: string): Promise<void> {
   });
 }
 
+
+//////////////
+////Stats////
+////////////
+
 export async function getStats(): Promise<Stat[]> {
   const res = await fetch(`${API_URL}/stats`);
+  return res.json();
+}
+
+
+//////////////////
+////Reminders////
+////////////////
+
+export async function getReminders(): Promise<Reminder[]> {
+  const res = await fetch(`${API_URL}/reminders`);
+  return res.json();
+}
+
+export async function createReminder(
+  title: string,
+  message: string,
+  dueAt: string
+): Promise<Reminder> {
+  const res = await fetch(`${API_URL}/reminders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title,
+      message,
+      dueAt,
+    }),
+  });
+
+  return res.json();
+}
+
+export async function markReminderDone(id: string): Promise<Reminder> {
+  const res = await fetch(`${API_URL}/reminders/${id}/done`, {
+    method: "PATCH",
+  });
+
+  return res.json();
+}
+
+export async function deleteReminder(id: string): Promise<void> {
+  await fetch(`${API_URL}/reminders/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export async function triggerReminder(id: string): Promise<Reminder> {
+  const res = await fetch(`${API_URL}/reminders/${id}/trigger`, {
+    method: "PATCH",
+  });
+
+  return res.json();
+}
+
+export async function createReminderFromExisting(
+  reminder: Reminder
+): Promise<Reminder> {
+  const res = await fetch(`${API_URL}/reminders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title: reminder.title,
+      message: reminder.message,
+      dueAt: reminder.dueAt,
+      done: reminder.done,
+      triggered: reminder.triggered,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Reminder konnte nicht wiederhergestellt werden.");
+  }
+
+  return res.json();
+}
+
+export async function reopenReminder(id: string): Promise<Reminder> {
+  const res = await fetch(`${API_URL}/reminders/${id}/reopen`, {
+    method: "PATCH",
+  });
+
+  if (!res.ok) {
+    throw new Error("Reminder konnte nicht wieder geöffnet werden.");
+  }
+
   return res.json();
 }

@@ -1,24 +1,13 @@
 import type { TaskCompletion } from "../types";
-import { UndoBanner } from "./UndoBanner";
 
 type Props = {
   completions: TaskCompletion[];
   onDelete: (id: string) => Promise<void>;
-  lastDeletedCompletion: TaskCompletion | null;
-  onUndoDeleteCompletion: () => Promise<void>;
-  onDismissUndo: () => void;
 };
 
-export function ActivityLog({ completions, onDelete, lastDeletedCompletion, onUndoDeleteCompletion, onDismissUndo }: Props) {
+export function ActivityLog({ completions, onDelete }: Props) {
   return (
     <section>
-
-      <UndoBanner
-        completion={lastDeletedCompletion}
-        onUndo={onUndoDeleteCompletion}
-        onDismiss={onDismissUndo}
-      />
-
       <h2>Verlauf</h2>
 
       {completions.length === 0 && <p>Noch kein Verlauf.</p>}

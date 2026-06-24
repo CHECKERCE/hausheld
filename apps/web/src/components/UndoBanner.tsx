@@ -1,22 +1,25 @@
-import type { TaskCompletion } from "../types";
-
 type Props = {
-  completion: TaskCompletion | null;
+  message: string | null;
   onUndo: () => Promise<void>;
   onDismiss: () => void;
 };
 
-export function UndoBanner({ completion, onUndo, onDismiss }: Props) {
-  if (!completion) return null;
+export function UndoBanner({
+  message,
+  onUndo,
+  onDismiss,
+}: Props) {
+  if (!message) {
+    return null;
+  }
 
   return (
-    <section className="undo-banner">
-      <span>
-        „{completion.task.name}“ von {completion.user.name} wurde gelöscht.
-      </span>
+    <section className="undo-banner" role="status" aria-live="polite">
+      <span>{message}</span>
 
-      <div>
+      <div className="undo-banner-actions">
         <button onClick={onUndo}>Rückgängig</button>
+
         <button className="secondary-button" onClick={onDismiss}>
           Schließen
         </button>

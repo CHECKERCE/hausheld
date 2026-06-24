@@ -10,9 +10,6 @@ type Props = {
   stats: Stat[];
   onCompleteTask: (userId: string, taskId: string) => Promise<void>;
   onDeleteCompletion: (id: string) => Promise<void>;
-  lastDeletedCompletion: TaskCompletion | null;
-  onUndoDeleteCompletion: () => Promise<void>;
-  onDismissUndo: () => void;
 };
 
 export function DashboardPage({
@@ -22,9 +19,6 @@ export function DashboardPage({
   stats,
   onCompleteTask,
   onDeleteCompletion,
-  lastDeletedCompletion,
-  onUndoDeleteCompletion,
-  onDismissUndo
 }: Props) {
   return (
     <>
@@ -39,9 +33,6 @@ export function DashboardPage({
       <ActivityLog
         completions={completions}
         onDelete={onDeleteCompletion}
-        lastDeletedCompletion={lastDeletedCompletion}
-        onUndoDeleteCompletion={onUndoDeleteCompletion}
-        onDismissUndo={onDismissUndo}
       />
     </>
   );

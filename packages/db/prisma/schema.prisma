@@ -35,3 +35,17 @@ model TaskCompletion {
   user User @relation(fields: [userId], references: [id])
   task Task @relation(fields: [taskId], references: [id])
 }
+
+model Reminder {
+  id        String   @id @default(cuid())
+
+  title     String
+  message   String
+
+  dueAt     DateTime
+  done      Boolean  @default(false)
+
+  triggered Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+}

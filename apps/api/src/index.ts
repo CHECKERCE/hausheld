@@ -213,3 +213,110 @@ app.get("/stats", async (req, res) => {
 app.listen(port, () => {
   console.log(`API läuft auf http://localhost:${port}`);
 });
+
+
+////////////////////////
+////Reminder routes////
+//////////////////////
+
+app.get("/reminders", async (req, res) => {
+  const reminders = await prisma.reminder.findMany({
+    orderBy: {
+      dueAt: "asc",
+    },
+  });
+
+  res.json(reminders);
+});
+
+app.post("/reminders", async (req, res) => {
+  const { title, message, dueAt, done, triggered } = req.body;
+
+  if (!title?.trim()) {
+    return res.status(400).json({ message: "Titel fehlt." });
+  }
+
+  if (!message?.trim()) {
+    return res.status(400).json({ message: "Nachricht fehlt." });
+  }
+
+  const dueDate = new Date(dueAt);
+
+  if (Number.isNaN(dueDate.getTime())) {
+    return res.status(400).json({ message: "Ungültiges Datum." });
+  }
+
+  const reminder = await prisma.reminder.create({
+    data: {
+      title: title.trim(),
+      message: message.trim(),
+      dueAt: dueDate,
+      done: typeof done === "boolean" ? done : false,
+      triggered: typeof triggered === "boolean" ? triggered : false,
+    },
+  });
+
+  res.status(201).json(reminder);
+});
+
+app.patch("/reminders/:id/done", async (req, res) => {
+  const { id } = req.params;
+
+  const reminder = await prisma.reminder.update({
+    where: { id },
+    data: { done: true },
+  });
+
+  res.json(reminder);
+});
+
+app.delete("/reminders/:id", async (req, res) => {
+  const { id } = req.params;
+
+  await prisma.reminder.delete({
+    where: { id },
+  });
+
+  res.status(204).send();
+});
+
+app.patch("/reminders/:id/trigger", async (req, res) => {
+  const { id } = req.params;
+
+  const reminder = await prisma.reminder.update({
+    where: {
+      id,
+    },
+    data: {
+      triggered: true,
+    },
+  });
+
+  res.json(reminder);
+});
+
+app.patch("/reminders/:id/reset-trigger", async (req, res) => {
+  const { id } = req.params;
+
+  const reminder = await prisma.reminder.update({
+    where: { id },
+    data: {
+      triggered: false,
+    },
+  });
+
+  res.json(reminder);
+});
+
+app.patch("/reminders/:id/reopen", async (req, res) => {
+  const { id } = req.params;
+
+  const reminder = await prisma.reminder.update({
+    where: { id },
+    data: {
+      done: false,
+    },
+  });
+
+  res.json(reminder);
+});

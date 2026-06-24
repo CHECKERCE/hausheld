@@ -4,21 +4,36 @@ import "./App.css";
 
 import {
   completeTask,
+  createReminder,
+  createReminderFromExisting,
   createTask,
+  createTaskCompletionWithDate,
+  deleteReminder,
+  deleteTask,
   deleteTaskCompletion,
+  getReminders,
   getStats,
   getTaskCompletions,
   getTasks,
   getUsers,
-  deleteTask,
+  markReminderDone,
+  reopenReminder,
   updateTask,
-  createTaskCompletionWithDate,
 } from "./api/hausheldApi";
 
-import type { Stat, Task, TaskCompletion, User } from "./types";
+import type {
+  Reminder,
+  Stat,
+  Task,
+  TaskCompletion,
+  UndoAction,
+  User,
+} from "./types";
+
 import { AppLayout } from "./layout/AppLayout";
 import { DashboardPage } from "./pages/DashboardPage";
 import { HistoryPage } from "./pages/HistoryPage";
+import { RemindersPage } from "./pages/RemindersPage";
 import { TasksPage } from "./pages/TasksPage";
 
 function App() {
@@ -26,54 +41,33 @@ function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completions, setCompletions] = useState<TaskCompletion[]>([]);
   const [stats, setStats] = useState<Stat[]>([]);
-  const [lastDeletedCompletion, setLastDeletedCompletion] =
-    useState<TaskCompletion | null>(null);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [undoAction, setUndoAction] = useState<UndoAction | null>(null);
 
   async function loadData() {
-    const [usersData, tasksData, completionsData, statsData] =
-      await Promise.all([
-        getUsers(),
-        getTasks(),
-        getTaskCompletions(),
-        getStats(),
-      ]);
+    const [
+      usersData,
+      tasksData,
+      completionsData,
+      statsData,
+      remindersData,
+    ] = await Promise.all([
+      getUsers(),
+      getTasks(),
+      getTaskCompletions(),
+      getStats(),
+      getReminders(),
+    ]);
 
     setUsers(usersData);
     setTasks(tasksData);
     setCompletions(completionsData);
     setStats(statsData);
+    setReminders(remindersData);
   }
 
   async function handleCreateTask(name: string, points: number) {
     await createTask(name, points);
-    await loadData();
-  }
-
-  async function handleCompleteTask(userId: string, taskId: string) {
-    await completeTask(userId, taskId);
-    await loadData();
-  }
-
-  async function handleDeleteCompletion(id: string) {
-    const completion = completions.find((item) => item.id === id);
-
-    if (!completion) return;
-
-    await deleteTaskCompletion(id);
-    setLastDeletedCompletion(completion);
-    await loadData();
-  }
-
-  async function handleUndoDeleteCompletion() {
-    if (!lastDeletedCompletion) return;
-
-    await createTaskCompletionWithDate(
-      lastDeletedCompletion.user.id,
-      lastDeletedCompletion.task.id,
-      lastDeletedCompletion.completedAt
-    );
-
-    setLastDeletedCompletion(null);
     await loadData();
   }
 
@@ -91,14 +85,135 @@ function App() {
     await loadData();
   }
 
+  async function handleCompleteTask(userId: string, taskId: string) {
+    await completeTask(userId, taskId);
+    await loadData();
+  }
+
+  async function handleDeleteCompletion(id: string) {
+    const completion = completions.find((item) => item.id === id);
+
+    if (!completion) {
+      return;
+    }
+
+    await deleteTaskCompletion(id);
+
+    setUndoAction({
+      kind: "completionDeleted",
+      completion,
+      message: `„${completion.task.name}“ von ${completion.user.name} wurde gelöscht.`,
+    });
+
+    await loadData();
+  }
+
+  async function handleCreateReminder(
+    title: string,
+    message: string,
+    dueAt: string
+  ) {
+    await createReminder(title, message, dueAt);
+    await loadData();
+  }
+
+  async function handleMarkReminderDone(id: string) {
+    const reminder = reminders.find((item) => item.id === id);
+
+    if (!reminder) {
+      return;
+    }
+
+    await markReminderDone(id);
+
+    setUndoAction({
+      kind: "reminderCompleted",
+      reminder,
+      message: `„${reminder.title}“ wurde als erledigt markiert.`,
+    });
+
+    await loadData();
+  }
+
+  async function handleDeleteReminder(id: string) {
+    const reminder = reminders.find((item) => item.id === id);
+
+    if (!reminder) {
+      return;
+    }
+
+    await deleteReminder(id);
+
+    setUndoAction({
+      kind: "reminderDeleted",
+      reminder,
+      message: `„${reminder.title}“ wurde gelöscht.`,
+    });
+
+    await loadData();
+  }
+
+  async function handleUndoAction() {
+    const action = undoAction;
+
+    if (!action) {
+      return;
+    }
+
+    try {
+      if (action.kind === "completionDeleted") {
+        await createTaskCompletionWithDate(
+          action.completion.user.id,
+          action.completion.task.id,
+          action.completion.completedAt
+        );
+      }
+
+      if (action.kind === "reminderDeleted") {
+        await createReminderFromExisting(action.reminder);
+      }
+
+      if (action.kind === "reminderCompleted") {
+        await reopenReminder(action.reminder.id);
+      }
+
+      setUndoAction(null);
+      await loadData();
+    } catch (error) {
+      console.error("Undo fehlgeschlagen:", error);
+    }
+  }
+
   useEffect(() => {
-    loadData();
+    void loadData();
   }, []);
+
+  useEffect(() => {
+    if (!undoAction) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setUndoAction(null);
+    }, 10_000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [undoAction]);
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<AppLayout />}>
+        <Route
+          element={
+            <AppLayout
+              undoMessage={undoAction?.message ?? null}
+              onUndo={handleUndoAction}
+              onDismissUndo={() => setUndoAction(null)}
+            />
+          }
+        >
           <Route
             path="/"
             element={
@@ -109,12 +224,10 @@ function App() {
                 stats={stats}
                 onCompleteTask={handleCompleteTask}
                 onDeleteCompletion={handleDeleteCompletion}
-                lastDeletedCompletion={lastDeletedCompletion}
-                onUndoDeleteCompletion={handleUndoDeleteCompletion}
-                onDismissUndo={() => setLastDeletedCompletion(null)}
               />
             }
           />
+
           <Route
             path="/tasks"
             element={
@@ -126,6 +239,7 @@ function App() {
               />
             }
           />
+
           <Route
             path="/history"
             element={
@@ -134,9 +248,18 @@ function App() {
                 tasks={tasks}
                 completions={completions}
                 onDeleteCompletion={handleDeleteCompletion}
-                lastDeletedCompletion={lastDeletedCompletion}
-                onUndoDeleteCompletion={handleUndoDeleteCompletion}
-                onDismissUndo={() => setLastDeletedCompletion(null)}
+              />
+            }
+          />
+
+          <Route
+            path="/reminders"
+            element={
+              <RemindersPage
+                reminders={reminders}
+                onCreateReminder={handleCreateReminder}
+                onMarkDone={handleMarkReminderDone}
+                onDeleteReminder={handleDeleteReminder}
               />
             }
           />

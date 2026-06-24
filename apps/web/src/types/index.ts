@@ -22,3 +22,30 @@ export type Stat = {
   tasksDone: number;
   points: number;
 };
+
+export type Reminder = {
+  id: string;
+  title: string;
+  message: string;
+  dueAt: string;
+  done: boolean;
+  triggered: boolean;
+  createdAt: string;
+};
+
+export type UndoAction =
+  | {
+      kind: "completionDeleted";
+      message: string;
+      completion: TaskCompletion;
+    }
+  | {
+      kind: "reminderDeleted";
+      message: string;
+      reminder: Reminder;
+    }
+  | {
+      kind: "reminderCompleted";
+      message: string;
+      reminder: Reminder;
+    };
