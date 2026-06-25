@@ -514,10 +514,27 @@ bot.command("link", async (ctx) => {
     );
 });
 
-bot.launch();
+
+async function startBot() {
+    await bot.launch();
+
+    console.log("Telegram Bot läuft...");
+
+    const shutdown = async (signal: "SIGINT" | "SIGTERM") => {
+        console.log(`Bot stoppt wegen ${signal}...`);
+
+        bot.stop(signal);
+
+        // Falls irgendwas offen bleibt, Prozess sauber beenden
+        setTimeout(() => {
+            process.exit(0);
+        }, 1000);
+    };
+
+    process.once("SIGINT", () => void shutdown("SIGINT"));
+    process.once("SIGTERM", () => void shutdown("SIGTERM"));
+}
+
+
 startReminderScheduler();
-
-console.log("Telegram Bot läuft...");
-
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
+void startBot();
