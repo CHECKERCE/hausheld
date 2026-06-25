@@ -67,7 +67,7 @@ Bot
 ---
 
 Projektstruktur
-
+```text
 hausheld/
 │
 ├── apps/
@@ -81,6 +81,7 @@ hausheld/
 ├── .env
 ├── package.json
 └── README.md
+```
 
 ---
 
