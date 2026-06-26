@@ -8,7 +8,7 @@ const commandOverviewString = "Befehle:\n" +
     "/stats - Zeigt eine Rangliste an\n" +
     "/reminders - Zeigt eine Übersicht der offenen Reminder\n" +
     "/remind <minuten> <Titel>, <Nachricht>\n" +
-    "/who - Wer hat aktuell die wenigsten Punkte und ist dran";
+    "/who - Wer hat aktuell den niedrigsten Score und ist dran";
 
 if (!botToken) {
     throw new Error("BOT_TOKEN fehlt in .env");
@@ -17,6 +17,19 @@ if (!botToken) {
 const bot = new Telegraf(botToken);
 
 import type { Stat, Reminder, User, UserAbsence, TaskCompletion } from  "@hausheld/types";
+
+type UserAbsenceResponse = Omit<UserAbsence, "startDate" | "endDate"> & {
+    startDate: string;
+    endDate: string;
+};
+
+function parseUserAbsence(absence: UserAbsenceResponse): UserAbsence {
+    return {
+        ...absence,
+        startDate: new Date(absence.startDate),
+        endDate: new Date(absence.endDate),
+    };
+}
 
 type TelegramChat = {
     id: string;
@@ -31,15 +44,17 @@ async function getUsers(): Promise<User[]> {
 
 async function getUserAbsences(): Promise<UserAbsence[]> {
     const res = await fetch(`${apiUrl}/user-absences`);
-    return res.json();
+    const absences = (await res.json()) as UserAbsenceResponse[];
+
+    return absences.map(parseUserAbsence);
 }
 
-function isDateInRange(date: Date, startDate: string, endDate: string) {
+function isDateInRange(date: Date, startDate: Date, endDate: Date) {
     const time = date.getTime();
 
     return (
-        time >= new Date(startDate).getTime() &&
-        time <= new Date(endDate).getTime()
+        time >= startDate.getTime() &&
+        time <= endDate.getTime()
     );
 }
 
@@ -179,9 +194,9 @@ function formatDueTime(value: string) {
 
 type SuggestedUserResult = {
     user: User;
-    points: number;
+    score: number;
     tasksDone: number;
-    lastCompletedAt: string | null;
+    lastCompletedAt: Date | null;
     availableUsersCount: number;
 };
 
@@ -216,17 +231,17 @@ async function getSuggestedUser(): Promise<SuggestedUserResult | null> {
 
         return {
             user,
-            points: stat?.points ?? 0,
+            score: stat?.fairnessScore ?? 0,
             tasksDone: stat?.tasksDone ?? 0,
             lastCompletedAt: lastCompletion?.completedAt ?? null,
             availableUsersCount: availableUsers.length,
         };
     });
 
-    const lowestPoints = Math.min(...usersWithData.map((item) => item.points));
+    const lowestScore = Math.min(...usersWithData.map((item) => item.score));
 
     const lowestPointUsers = usersWithData.filter(
-        (item) => item.points === lowestPoints
+        (item) => item.score === lowestScore
     );
 
     const neverDone = lowestPointUsers.filter(
@@ -391,10 +406,10 @@ bot.command("stats", async (ctx) => {
     }
 
     const text = stats
-        .sort((a, b) => b.points - a.points)
+        .sort((a, b) => b.fairnessScore - a.fairnessScore)
         .map(
             (stat, index) =>
-                `${index + 1}. ${stat.name}: ${stat.points} Punkte (${stat.tasksDone} Aufgaben)`
+                `${index + 1}. ${stat.name}: Score: ${stat.fairnessScore}`
         )
         .join("\n");
 
@@ -413,7 +428,7 @@ bot.command("who", async (ctx) => {
 
     await ctx.reply(
         `Heute wäre ${suggested.user.name} dran 🙂\n\n` +
-        `Punkte: ${suggested.points}\n` +
+        `Score: ${suggested.score}\n` +
         `Aufgaben erledigt: ${suggested.tasksDone}\n` +
         `Verfügbare Personen: ${suggested.availableUsersCount}` +
         (suggested.lastCompletedAt

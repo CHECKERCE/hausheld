@@ -1,6 +1,20 @@
 import type { Reminder, Stat, Task, TaskCompletion, User, UserAbsence } from "@hausheld/types";
 
-const API_URL = "/api";
+//const API_URL = "/api";
+const API_URL = "http://localhost:3001";
+
+type UserAbsenceResponse = Omit<UserAbsence, "startDate" | "endDate"> & {
+  startDate: string;
+  endDate: string;
+};
+
+function parseUserAbsence(absence: UserAbsenceResponse): UserAbsence {
+  return {
+    ...absence,
+    startDate: new Date(absence.startDate),
+    endDate: new Date(absence.endDate),
+  };
+}
 
 //////////////
 ////User/////
@@ -39,13 +53,15 @@ export async function deleteUser(id: string): Promise<void> {
 
 export async function getUserAbsences(): Promise<UserAbsence[]> {
   const res = await fetch(`${API_URL}/user-absences`);
-  return res.json();
+  const absences = (await res.json()) as UserAbsenceResponse[];
+
+  return absences.map(parseUserAbsence);
 }
 
 export async function createUserAbsence(
   userId: string,
-  startDate: string,
-  endDate: string,
+  startDate: Date,
+  endDate: Date,
   reason: string
 ): Promise<UserAbsence> {
   const res = await fetch(`${API_URL}/user-absences`, {
@@ -54,7 +70,9 @@ export async function createUserAbsence(
     body: JSON.stringify({ userId, startDate, endDate, reason }),
   });
 
-  return res.json();
+  const absence = (await res.json()) as UserAbsenceResponse;
+
+  return parseUserAbsence(absence);
 }
 
 export async function deleteUserAbsence(id: string): Promise<void> {
@@ -141,7 +159,7 @@ export async function completeTask(
 export async function createTaskCompletionWithDate(
   userId: string,
   taskId: string,
-  completedAt: string
+  completedAt: Date
 ): Promise<TaskCompletion> {
   const res = await fetch(`${API_URL}/task-completions`, {
     method: "POST",

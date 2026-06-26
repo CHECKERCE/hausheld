@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { prisma } from "@hausheld/db";
 import { startDailyReminderScheduler } from "./services/dailyReminderScheduler";
+import { calculateAwayStats } from "./utils/absenceStats";
 
 dotenv.config();
 
@@ -11,6 +12,8 @@ const port = process.env.API_PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+import type { User, Stat } from "@hausheld/types";
 
 app.get("/", (req, res) => {
   res.json({
@@ -182,7 +185,7 @@ app.patch("/users/:id/back", async (req, res) => {
 });
 
 
-// abcence
+// absence
 
 app.get("/user-absences", async (req, res) => {
   const absences = await prisma.userAbsence.findMany({
@@ -276,30 +279,47 @@ app.get("/stats", async (req, res) => {
     },
   });
 
-  type UserStats = {
-    userId: string;
-    name: string;
-    tasksDone: number;
-    points: number;
-  };
-
-  const stats: Record<string, UserStats> = {};
+  const stats: Record<string, Stat> = {};
+  let users: Set<User> = new Set;
 
   for (const completion of completions) {
-    const userId = completion.user.id;
+    const user: User = completion.user;
+    users.add(user);
 
-    if (!stats[userId]) {
-      stats[userId] = {
-        userId,
+    if (!stats[user.id]) {
+      stats[user.id] = {
+        userId: user.id,
         name: completion.user.name,
         tasksDone: 0,
         points: 0,
+        fairnessScore: 0,
+        isAway: false,
+        activeDays: 0,
+        absenceDays: 0
       };
     }
 
-    stats[userId].tasksDone += 1;
-    stats[userId].points += completion.task.points;
+    stats[user.id].tasksDone += 1;
+    stats[user.id].points += completion.task.points;
   }
+
+  const absences = await prisma.userAbsence.findMany({
+    include: { user: true }
+  });
+
+  users.forEach(user => {
+    const userAbsences = absences.filter(absence => absence.userId === user.id);
+    const awayStats = calculateAwayStats(user, completions, userAbsences);
+
+    stats[user.id].isAway = awayStats.isAway;
+    stats[user.id].activeDays = awayStats.activeDays;
+    stats[user.id].absenceDays = awayStats.absenceDays;
+    stats[user.id].fairnessScore = awayStats.activeDays > 0
+      ? stats[user.id].points / awayStats.activeDays
+      : 0;
+  });
+
+
 
   res.json(Object.values(stats));
 });

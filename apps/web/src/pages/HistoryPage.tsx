@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { HistoryCharts } from "../components/HistoryCharts";
-import type { Task, TaskCompletion, User, Stat, UserAbsence } from "@hausheld/types";
+import type { Task, TaskCompletion, User, Stat } from "@hausheld/types";
 
 type Props = {
   users: User[];
@@ -8,7 +8,6 @@ type Props = {
   tasks: Task[];
   completions: TaskCompletion[];
   onDeleteCompletion: (id: string) => Promise<void>;
-  abcences: UserAbsence[];
 };
 
 export function HistoryPage({
@@ -17,7 +16,6 @@ export function HistoryPage({
   tasks,
   completions,
   onDeleteCompletion,
-  abcences,
 }: Props) {
   const [search, setSearch] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -100,10 +98,8 @@ export function HistoryPage({
       </section>
 
       <HistoryCharts
-        users={users}
         stats={stats}
         completions={filteredCompletions}
-        absences={abcences}
       />
 
       <section>

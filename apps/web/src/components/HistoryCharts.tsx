@@ -7,23 +7,14 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { Stat, TaskCompletion, User, UserAbsence } from "@hausheld/types";
-import { calculateFairnessStats } from "../utils/fairness";
+import type { Stat, TaskCompletion } from "@hausheld/types";
 
 type Props = {
-  users: User[];
   stats: Stat[];
   completions: TaskCompletion[];
-  absences: UserAbsence[];
 };
 
-export function HistoryCharts({ users, stats, completions, absences }: Props) {
-  const fairnessByUser = calculateFairnessStats(
-    users,
-    stats,
-    completions,
-    absences
-  ).sort((a, b) => b.score - a.score);
+export function HistoryCharts({ stats, completions }: Props) {
 
   const countByTask = Object.values(
     completions.reduce<Record<string, { task: string; count: number }>>(
@@ -61,7 +52,7 @@ export function HistoryCharts({ users, stats, completions, absences }: Props) {
           <h3>Score pro Person</h3>
 
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={fairnessByUser} margin={{ top: 10, right: 8, left: -16 }}>
+            <BarChart data={stats} margin={{ top: 10, right: 8, left: -16 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
 
               <XAxis

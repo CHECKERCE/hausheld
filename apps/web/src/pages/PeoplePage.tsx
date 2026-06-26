@@ -10,8 +10,8 @@ type Props = {
     onDeleteUser: (id: string) => Promise<void>;
     onCreateAbsence: (
         userId: string,
-        startDate: string,
-        endDate: string,
+        startDate: Date,
+        endDate: Date,
         reason: string
     ) => Promise<void>;
     onDeleteAbsence: (id: string) => Promise<void>;
@@ -64,10 +64,17 @@ export function PeoplePage({
     async function createAbsence() {
         if (!absenceUserId || !absenceStart || !absenceEnd) return;
 
+        const startDate = new Date(absenceStart);
+        const endDate = new Date(absenceEnd);
+
+        if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+            return;
+        }
+
         await onCreateAbsence(
             absenceUserId,
-            new Date(absenceStart).toISOString(),
-            new Date(absenceEnd).toISOString(),
+            startDate,
+            endDate,
             absenceReason
         );
 
@@ -95,8 +102,8 @@ export function PeoplePage({
                         const activeAbsence = userAbsences.find((absence) => {
                             const now = Date.now();
                             return (
-                                new Date(absence.startDate).getTime() <= now &&
-                                new Date(absence.endDate).getTime() >= now
+                                absence.startDate.getTime() <= now &&
+                                absence.endDate.getTime() >= now
                             );
                         });
 
@@ -117,9 +124,7 @@ export function PeoplePage({
                                             {activeAbsence && (
                                                 <span className="person-status">
                                                     🏖️ abwesend bis{" "}
-                                                    {new Date(activeAbsence.endDate).toLocaleDateString(
-                                                        "de-DE"
-                                                    )}
+                                                    {activeAbsence.endDate.toLocaleDateString("de-DE")}
                                                 </span>
                                             )}
                                         </div>
@@ -218,8 +223,8 @@ export function PeoplePage({
                             <div className="person-main">
                                 <strong>{absence.user.name}</strong>
                                 <span className="person-status">
-                                    {new Date(absence.startDate).toLocaleDateString("de-DE")} –{" "}
-                                    {new Date(absence.endDate).toLocaleDateString("de-DE")}
+                                    {absence.startDate.toLocaleDateString("de-DE")} –{" "}
+                                    {absence.endDate.toLocaleDateString("de-DE")}
                                     {absence.reason ? ` · ${absence.reason}` : ""}
                                 </span>
                             </div>

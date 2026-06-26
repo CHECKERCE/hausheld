@@ -1,16 +1,4 @@
-import type { Stat, TaskCompletion, User, UserAbsence } from "@hausheld/types";
-
-export type FairnessUserStat = {
-  userId: string;
-  name: string;
-  points: number;
-  tasksDone: number;
-  activeDays: number;
-  absenceDays: number;
-  score: number;
-  isAway: boolean;
-  lastCompletedAt: string | null;
-};
+import type { TaskCompletion, User, UserAbsence } from "@hausheld/types";
 
 function startOfDay(date: Date) {
   const copy = new Date(date);
@@ -70,12 +58,15 @@ function isCurrentlyAway(userId: string, absences: UserAbsence[]) {
   });
 }
 
-export function calculateFairnessStats(
-  users: User[],
-  stats: Stat[],
+export function calculateAwayStats(
+  user: User,
   completions: TaskCompletion[],
   absences: UserAbsence[]
-): FairnessUserStat[] {
+): {
+  isAway: boolean;
+  activeDays: number;
+  absenceDays: number;
+} {
   const now = new Date();
 
   const firstCompletionDate =
@@ -91,50 +82,27 @@ export function calculateFairnessStats(
 
   const totalDays = daysBetweenInclusive(firstCompletionDate, now);
 
-  return users.map((user) => {
-    const stat = stats.find((item) => item.userId === user.id);
+  const userAbsences = absences.filter(
+    (absence) => absence.userId === user.id
+  );
 
-    const userCompletions = completions.filter(
-      (completion) => completion.user.id === user.id
+  const absenceDays = userAbsences.reduce((sum, absence) => {
+    return (
+      sum +
+      getOverlapDays(
+        firstCompletionDate,
+        now,
+        new Date(absence.startDate),
+        new Date(absence.endDate)
+      )
     );
+  }, 0);
 
-    const lastCompletion = [...userCompletions].sort(
-      (a, b) =>
-        new Date(b.completedAt).getTime() -
-        new Date(a.completedAt).getTime()
-    )[0];
+  const activeDays = Math.max(1, totalDays - absenceDays);
 
-    const userAbsences = absences.filter(
-      (absence) => absence.userId === user.id
-    );
-
-    const absenceDays = userAbsences.reduce((sum, absence) => {
-      return (
-        sum +
-        getOverlapDays(
-          firstCompletionDate,
-          now,
-          new Date(absence.startDate),
-          new Date(absence.endDate)
-        )
-      );
-    }, 0);
-
-    const activeDays = Math.max(1, totalDays - absenceDays);
-
-    const points = stat?.points ?? 0;
-    const tasksDone = stat?.tasksDone ?? 0;
-
-    return {
-      userId: user.id,
-      name: user.name,
-      points,
-      tasksDone,
-      activeDays,
-      absenceDays,
-      score: points / activeDays,
-      isAway: isCurrentlyAway(user.id, absences),
-      lastCompletedAt: lastCompletion?.completedAt ?? null,
-    };
-  });
+  return {
+    isAway: isCurrentlyAway(user.id, absences),
+    activeDays,
+    absenceDays
+  };
 }

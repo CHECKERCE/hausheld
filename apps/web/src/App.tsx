@@ -95,8 +95,8 @@ function App() {
 
   async function handleCreateAbsence(
     userId: string,
-    startDate: string,
-    endDate: string,
+    startDate: Date,
+    endDate: Date,
     reason: string
   ) {
     await createUserAbsence(userId, startDate, endDate, reason);
@@ -273,7 +273,6 @@ function App() {
                 reminders={reminders}
                 onMarkReminderDone={handleMarkReminderDone}
                 onDeleteReminder={handleDeleteReminder}
-                abcences={absences}
               />
             }
           />
@@ -299,7 +298,6 @@ function App() {
                 tasks={tasks}
                 completions={completions}
                 onDeleteCompletion={handleDeleteCompletion}
-                abcences={absences}
               />
             }
           />

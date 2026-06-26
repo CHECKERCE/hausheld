@@ -8,8 +8,8 @@ export type User = {
 export type UserAbsence = {
   id: string;
   userId: string;
-  startDate: string;
-  endDate: string;
+  startDate: Date;
+  endDate: Date;
   reason: string | null;
   user: User;
 };
@@ -22,7 +22,7 @@ export type Task = {
 
 export type TaskCompletion = {
   id: string;
-  completedAt: string;
+  completedAt: Date;
   user: User;
   task: Task;
 };
@@ -32,6 +32,10 @@ export type Stat = {
   name: string;
   tasksDone: number;
   points: number;
+  fairnessScore: number;
+  isAway: boolean;
+  activeDays: number;
+  absenceDays: number;
 };
 
 export type Reminder = {
