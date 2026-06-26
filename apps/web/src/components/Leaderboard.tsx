@@ -1,4 +1,4 @@
-import type { TaskCompletion, Stat, User, UserAbsence } from "../types";
+import type { TaskCompletion, Stat, User, UserAbsence } from "@hausheld/types";
 import { calculateFairnessStats } from "../utils/fairness";
 
 type Props = {

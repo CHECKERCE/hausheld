@@ -1,4 +1,4 @@
-import type { Stat, TaskCompletion, User, UserAbsence } from "../types";
+import type { Stat, TaskCompletion, User, UserAbsence } from "@hausheld/types";
 
 export type FairnessUserStat = {
   userId: string;
@@ -81,12 +81,12 @@ export function calculateFairnessStats(
   const firstCompletionDate =
     completions.length > 0
       ? new Date(
-          Math.min(
-            ...completions.map((completion) =>
-              new Date(completion.completedAt).getTime()
-            )
+        Math.min(
+          ...completions.map((completion) =>
+            new Date(completion.completedAt).getTime()
           )
         )
+      )
       : now;
 
   const totalDays = daysBetweenInclusive(firstCompletionDate, now);

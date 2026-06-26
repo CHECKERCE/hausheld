@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { HistoryCharts } from "../components/HistoryCharts";
-import type { Task, TaskCompletion, User, Stat, UserAbsence } from "../types";
+import type { Task, TaskCompletion, User, Stat, UserAbsence } from "@hausheld/types";
 
 type Props = {
   users: User[];

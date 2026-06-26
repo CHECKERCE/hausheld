@@ -16,55 +16,12 @@ if (!botToken) {
 
 const bot = new Telegraf(botToken);
 
-type Task = {
-    id: string;
-    name: string;
-    points: number;
-};
-
-type Stat = {
-    userId: string;
-    name: string;
-    tasksDone: number;
-    points: number;
-};
-
-type Reminder = {
-    id: string;
-    title: string;
-    message: string;
-    dueAt: string;
-    done: boolean;
-    triggered: boolean;
-};
-
-type User = {
-    id: string;
-    name: string;
-    telegramUserId?: string | null;
-    telegramName?: string | null;
-};
-
-type UserAbsence = {
-    id: string;
-    userId: string;
-    startDate: string;
-    endDate: string;
-    reason?: string | null;
-    user: User;
-};
+import type { Stat, Reminder, User, UserAbsence, TaskCompletion } from  "@hausheld/types";
 
 type TelegramChat = {
     id: string;
     chatId: string;
     title?: string | null;
-};
-
-type TaskCompletion = {
-    id: string;
-    completedAt: string;
-    user: User;
-    task: Task;
 };
 
 async function getUsers(): Promise<User[]> {

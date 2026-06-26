@@ -35,7 +35,7 @@ import type {
   UndoAction,
   User,
   UserAbsence,
-} from "./types";
+} from "../../../packages/types/src";
 
 import { AppLayout } from "./layout/AppLayout";
 import { DashboardPage } from "./pages/DashboardPage";

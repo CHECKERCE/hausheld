@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CreateUserForm } from "../components/CreateUserForm";
-import type { User, UserAbsence } from "../types";
+import type { User, UserAbsence } from "@hausheld/types";
 
 type Props = {
     users: User[];

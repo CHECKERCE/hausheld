@@ -1,4 +1,4 @@
-import type { TaskCompletion } from "../types";
+import type { TaskCompletion } from "@hausheld/types";
 
 type Props = {
   completions: TaskCompletion[];

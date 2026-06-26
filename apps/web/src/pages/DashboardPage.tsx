@@ -2,7 +2,7 @@ import { ActivityLog } from "../components/ActivityLog";
 import { CompleteTaskForm } from "../components/CompleteTaskForm";
 import { Leaderboard } from "../components/Leaderboard";
 import { OpenRemindersList } from "../components/OpenRemindersList";
-import type { Reminder, Stat, Task, TaskCompletion, User, UserAbsence } from "../types";
+import type { Reminder, Stat, Task, TaskCompletion, User, UserAbsence } from "@hausheld/types";
 
 type Props = {
   users: User[];

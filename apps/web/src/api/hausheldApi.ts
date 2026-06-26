@@ -1,4 +1,4 @@
-import type { Reminder, Stat, Task, TaskCompletion, User, UserAbsence } from "../types";
+import type { Reminder, Stat, Task, TaskCompletion, User, UserAbsence } from "@hausheld/types";
 
 const API_URL = "/api";
 

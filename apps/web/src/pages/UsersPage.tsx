@@ -1,5 +1,5 @@
 import { CreateUserForm } from "../components/CreateUserForm";
-import type { User } from "../types";
+import type { User } from "@hausheld/types";
 
 type Props = {
   users: User[];

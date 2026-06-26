@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { OpenRemindersList } from "../components/OpenRemindersList";
-import type { Reminder } from "../types";
+import type { Reminder } from "@hausheld/types";
 
 type Props = {
   reminders: Reminder[];

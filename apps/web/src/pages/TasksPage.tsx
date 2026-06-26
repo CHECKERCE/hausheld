@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CreateTaskForm } from "../components/CreateTaskForm";
-import type { Task } from "../types";
+import type { Task } from "@hausheld/types";
 
 type Props = {
   tasks: Task[];

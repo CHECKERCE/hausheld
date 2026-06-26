@@ -21,5 +21,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "../api/src/services"]
+  "include": ["src", "../api/src/services", "../../types", "../../packages/types/src/index.ts"]
 }

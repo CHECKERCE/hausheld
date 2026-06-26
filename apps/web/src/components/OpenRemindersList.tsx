@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Reminder } from "../types";
+import type { Reminder } from "@hausheld/types";
 
 type Props = {
   reminders: Reminder[];

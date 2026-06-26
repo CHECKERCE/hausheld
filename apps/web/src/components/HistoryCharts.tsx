@@ -7,7 +7,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { Stat, TaskCompletion, User, UserAbsence } from "../types";
+import type { Stat, TaskCompletion, User, UserAbsence } from "@hausheld/types";
 import { calculateFairnessStats } from "../utils/fairness";
 
 type Props = {

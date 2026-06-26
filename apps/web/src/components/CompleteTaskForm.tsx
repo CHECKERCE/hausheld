@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Task, User } from "../types";
+import type { Task, User } from "@hausheld/types";
 import { deleteCookie, getCookie, setCookie } from "../utils/cookies";
 
 const SELECTED_USER_COOKIE = "hausheld_selected_user_id";
