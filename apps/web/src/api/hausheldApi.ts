@@ -1,7 +1,7 @@
 import type { Reminder, Stat, Task, TaskCompletion, User, UserAbsence } from "@hausheld/types";
 
-//const API_URL = "/api";
-const API_URL = "http://localhost:3001";
+const API_URL = "/api";
+//const API_URL = "http://localhost:3001";
 
 type UserAbsenceResponse = Omit<UserAbsence, "startDate" | "endDate"> & {
   startDate: string;
