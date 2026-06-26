@@ -409,7 +409,7 @@ bot.command("stats", async (ctx) => {
         .sort((a, b) => b.fairnessScore - a.fairnessScore)
         .map(
             (stat, index) =>
-                `${index + 1}. ${stat.name}: Score: ${stat.fairnessScore}`
+                `${index + 1}. ${stat.name}: Score: ${stat.fairnessScore.toFixed(2)} Punkte/Tag (${stat.points} Punkte, ${stat.activeDays} aktive Tage)`
         )
         .join("\n");
 
@@ -428,7 +428,7 @@ bot.command("who", async (ctx) => {
 
     await ctx.reply(
         `Heute wäre ${suggested.user.name} dran 🙂\n\n` +
-        `Score: ${suggested.score}\n` +
+        `Score: ${suggested.score.toFixed(2)}\n` +
         `Aufgaben erledigt: ${suggested.tasksDone}\n` +
         `Verfügbare Personen: ${suggested.availableUsersCount}` +
         (suggested.lastCompletedAt
