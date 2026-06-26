@@ -1,4 +1,4 @@
-Hausheld
+# Hausheld
 
 Hausheld ist eine kleine Webanwendung mit Telegram-Bot zur Organisation von Haushaltsaufgaben, Remindern und Fairness-Statistiken im Familien- oder WG-Alltag.
 
