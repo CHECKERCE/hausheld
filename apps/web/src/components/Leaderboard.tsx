@@ -13,7 +13,7 @@ export function Leaderboard({ stats }: Props) {
       {stats.length === 0 && <p>Noch keine Personen.</p>}
 
       <ul>
-        {stats.map((stat) => (
+        {stats.sort((a, b) => b.points - a.points).map((stat) => (
           <li key={stat.userId}>
             <strong>{stat.name}</strong>
             {stat.isAway && " 🏖️ abwesend"}:{" "}
