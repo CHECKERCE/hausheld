@@ -313,7 +313,6 @@ app.get("/stats", async (req, res) => {
     stats[userId].points += effectivePoints;
   }
 
-  // optional: nur für Anzeige (kein Einfluss mehr auf Score)
   for (const user of users) {
     const userAbsences = absences.filter(a => a.userId === user.id);
 

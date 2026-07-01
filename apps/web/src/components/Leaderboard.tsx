@@ -8,7 +8,7 @@ export function Leaderboard({ stats }: Props) {
 
   return (
     <section>
-      <h2>Fairness-Rangliste</h2>
+      <h2>Rangliste</h2>
 
       {stats.length === 0 && <p>Noch keine Personen.</p>}
 
@@ -17,10 +17,7 @@ export function Leaderboard({ stats }: Props) {
           <li key={stat.userId}>
             <strong>{stat.name}</strong>
             {stat.isAway && " 🏖️ abwesend"}:{" "}
-            {stat.points.toFixed(2)} Punkte/Tag{" "}
-            <span className="muted">
-              ({stat.points} Punkte, {stat.activeDays} aktive Tage, {stat.absenceDays} abwesend)
-            </span>
+            {`${stat.points.toFixed(2)} Punkte, ${stat.activeDays} aktive Tage, ${stat.absenceDays} abwesend`}
           </li>
         ))}
       </ul>

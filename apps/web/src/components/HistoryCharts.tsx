@@ -73,10 +73,16 @@ export function HistoryCharts({ stats, completions }: Props) {
                 contentStyle={tooltipStyle}
                 labelStyle={{ color: "#f4f4f5" }}
                 itemStyle={{ color: "#c4b5fd" }}
+                formatter={(value) =>
+                  typeof value === "number"
+                    ? [value.toFixed(2), "score"]
+                    : [value, "score"]
+                }
               />
 
               <Bar
                 dataKey="points"
+                name="score"
                 fill="#8b5cf6"
                 radius={[7, 7, 2, 2]}
               />
@@ -113,6 +119,7 @@ export function HistoryCharts({ stats, completions }: Props) {
 
               <Bar
                 dataKey="count"
+                name="Erledigungen"
                 fill="#38bdf8"
                 radius={[7, 7, 2, 2]}
               />
