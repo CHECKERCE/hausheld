@@ -25,7 +25,8 @@ Ziel des Projekts ist es, Aufgaben nachvollziehbar zu verteilen, Aktivität zu d
 
 - Rangliste aller Personen
 - Punkte-, Aufgaben- und Fairness-Score-Ansicht
-- Berücksichtigung von Abwesenheiten bei der Auswertung
+- Dynamische Punktegewichtung pro erledigter Aufgabe je nach Anzahl aktiver Personen
+- Abwesenheiten beeinflussen den Score indirekt, da sie die Anzahl aktiver Personen zum Erledigungszeitpunkt reduzieren
 - Diagramme und Verlaufsansicht
 - Filter nach Person und Aufgabe
 
@@ -166,7 +167,27 @@ npm run build
 - `/stats`
 - `/who`
 
-`/who` zeigt die Person, die aktuell am ehesten dran wäre. Grundlage ist der Fairness-Score pro aktivem Tag.
+`/who` zeigt die Person, die aktuell am ehesten dran wäre. Grundlage ist der gewichtete Fairness-Score.
+
+## Scoring-System
+
+Der Score wird pro erledigter Aufgabe dynamisch berechnet:
+
+- Basis sind die Punkte der Aufgabe.
+- Diese Punkte werden durch die Anzahl aktiver Personen zum Zeitpunkt der Erledigung gewichtet.
+- Als Gewichtung wird ein Exponent von `0.7` verwendet.
+
+Formel:
+
+$$
+P_{eff} = \frac{P_{task}}{n_{active}^{0.7}}
+$$
+
+Hinweise:
+
+- Personen gelten innerhalb ihrer erfassten Abwesenheitszeiträume als nicht aktiv.
+- Je weniger aktive Personen es zum Erledigungszeitpunkt gibt, desto höher sind die effektiven Punkte.
+- `activeDays` und `absenceDays` werden weiterhin für die Anzeige berechnet, beeinflussen den Score aber nicht direkt.
 
 ### Reminder
 

@@ -17,7 +17,7 @@ export function Leaderboard({ stats }: Props) {
           <li key={stat.userId}>
             <strong>{stat.name}</strong>
             {stat.isAway && " 🏖️ abwesend"}:{" "}
-            {stat.fairnessScore.toFixed(2)} Punkte/Tag{" "}
+            {stat.points.toFixed(2)} Punkte/Tag{" "}
             <span className="muted">
               ({stat.points} Punkte, {stat.activeDays} aktive Tage, {stat.absenceDays} abwesend)
             </span>

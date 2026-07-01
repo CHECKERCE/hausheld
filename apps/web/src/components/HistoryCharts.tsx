@@ -76,7 +76,7 @@ export function HistoryCharts({ stats, completions }: Props) {
               />
 
               <Bar
-                dataKey="score"
+                dataKey="points"
                 fill="#8b5cf6"
                 radius={[7, 7, 2, 2]}
               />

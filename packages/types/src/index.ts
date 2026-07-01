@@ -32,7 +32,6 @@ export type Stat = {
   name: string;
   tasksDone: number;
   points: number;
-  fairnessScore: number;
   isAway: boolean;
   activeDays: number;
   absenceDays: number;

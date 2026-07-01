@@ -231,7 +231,7 @@ async function getSuggestedUser(): Promise<SuggestedUserResult | null> {
 
         return {
             user,
-            score: stat?.fairnessScore ?? 0,
+            score: stat?.points ?? 0,
             tasksDone: stat?.tasksDone ?? 0,
             lastCompletedAt: lastCompletion?.completedAt ?? null,
             availableUsersCount: availableUsers.length,
@@ -406,10 +406,10 @@ bot.command("stats", async (ctx) => {
     }
 
     const text = stats
-        .sort((a, b) => b.fairnessScore - a.fairnessScore)
+        .sort((a, b) => b.points - a.points)
         .map(
             (stat, index) =>
-                `${index + 1}. ${stat.name}: Score: ${stat.fairnessScore.toFixed(2)} Punkte/Tag (${stat.points} Punkte, ${stat.activeDays} aktive Tage)`
+                `${index + 1}. ${stat.name}: Score: ${stat.points.toFixed(2)} Punkte/Tag (${stat.points} Punkte, ${stat.activeDays} aktive Tage)`
         )
         .join("\n");
 

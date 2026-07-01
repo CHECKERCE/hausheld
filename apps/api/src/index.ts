@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { prisma } from "@hausheld/db";
 import { startDailyReminderScheduler } from "./services/dailyReminderScheduler";
-import { calculateAwayStats } from "./utils/absenceStats";
+import { calculateAwayStats, calculateEffectivePoints } from "./utils/absenceStats";
 
 dotenv.config();
 
@@ -279,47 +279,50 @@ app.get("/stats", async (req, res) => {
     },
   });
 
+  const users = await prisma.user.findMany();
+  const userIds = users.map(u => u.id);
+
+  const absences = await prisma.userAbsence.findMany({ include: { user: true } });
+
   const stats: Record<string, Stat> = {};
-  let users: Set<User> = new Set;
 
-  for (const completion of completions) {
-    const user: User = completion.user;
-    users.add(user);
-
-    if (!stats[user.id]) {
-      stats[user.id] = {
-        userId: user.id,
-        name: completion.user.name,
-        tasksDone: 0,
-        points: 0,
-        fairnessScore: 0,
-        isAway: false,
-        activeDays: 0,
-        absenceDays: 0
-      };
-    }
-
-    stats[user.id].tasksDone += 1;
-    stats[user.id].points += completion.task.points;
+  // init
+  for (const user of users) {
+    stats[user.id] = {
+      userId: user.id,
+      name: user.name,
+      tasksDone: 0,
+      points: 0,
+      isAway: false,
+      activeDays: 0,
+      absenceDays: 0
+    };
   }
 
-  const absences = await prisma.userAbsence.findMany({
-    include: { user: true }
-  });
+  // neue Punkteberechnung
+  for (const completion of completions) {
+    const effectivePoints = calculateEffectivePoints(
+      completion,
+      userIds,
+      absences
+    );
 
-  users.forEach(user => {
-    const userAbsences = absences.filter(absence => absence.userId === user.id);
+    const userId = completion.userId;
+
+    stats[userId].tasksDone += 1;
+    stats[userId].points += effectivePoints;
+  }
+
+  // optional: nur für Anzeige (kein Einfluss mehr auf Score)
+  for (const user of users) {
+    const userAbsences = absences.filter(a => a.userId === user.id);
+
     const awayStats = calculateAwayStats(user, completions, userAbsences);
 
     stats[user.id].isAway = awayStats.isAway;
     stats[user.id].activeDays = awayStats.activeDays;
     stats[user.id].absenceDays = awayStats.absenceDays;
-    stats[user.id].fairnessScore = awayStats.activeDays > 0
-      ? stats[user.id].points / awayStats.activeDays
-      : 0;
-  });
-
-
+  }
 
   res.json(Object.values(stats));
 });
