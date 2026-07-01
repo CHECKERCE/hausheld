@@ -5,6 +5,7 @@ type Props = {
 };
 
 export function Leaderboard({ stats }: Props) {
+  const sortedStats = [...stats].sort((a, b) => b.points - a.points);
 
   return (
     <section>
@@ -13,7 +14,7 @@ export function Leaderboard({ stats }: Props) {
       {stats.length === 0 && <p>Noch keine Personen.</p>}
 
       <ul>
-        {stats.sort((a, b) => b.points - a.points).map((stat) => (
+        {sortedStats.map((stat) => (
           <li key={stat.userId}>
             <strong>{stat.name}</strong>
             {stat.isAway && " 🏖️ abwesend"}:{" "}
